@@ -105,7 +105,7 @@
 			</exclusions>
 		</dependency>
 	</dependencies>
-
+<!--
 	<distributionManagement>
 		<snapshotRepository>
 			<id>yiyun.snapshot</id>
@@ -118,7 +118,7 @@
 			<url>http://192.168.1.151:8081/nexus/content/repositories/releases/</url>
 		</repository>
 	</distributionManagement>
-
+-->
 	<build>
 		<plugins>
 			<plugin>
