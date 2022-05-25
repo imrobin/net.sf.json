@@ -143,7 +143,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 */
 	public static JSONObject fromObject(Object object, JsonConfig jsonConfig) {
 		if (object == null || JSONUtils.isNull(object)) {
-			return new JSONObject(true);
+			return null;
 		} else if (object instanceof Enum) {
 			throw new JSONException("'object' is an Enum. Use JSONArray instead");
 		} else if (object instanceof Annotation || (object != null && object.getClass().isAnnotation())) {
@@ -161,7 +161,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 		} else if (object instanceof String) {
 			return _fromString((String) object, jsonConfig);
 		} else if (JSONUtils.isNumber(object) || JSONUtils.isBoolean(object) || JSONUtils.isString(object)) {
-			return new JSONObject();
+			return null;
 		} else if (JSONUtils.isArray(object)) {
 			throw new JSONException("'object' is an array. Use JSONArray instead");
 		} else {
@@ -1140,10 +1140,8 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	}
 
 	private static JSONObject _fromString(String str, JsonConfig jsonConfig) {
-		if (str == null || "null".equals(str)) {
-			fireObjectStartEvent(jsonConfig);
-			fireObjectEndEvent(jsonConfig);
-			return new JSONObject(true);
+		if (str == null || "null".equals(str) || str.trim().length() == 0) {
+			return null;
 		}
 		return _fromJSONTokener(new JSONTokener(str), jsonConfig);
 	}
@@ -1917,10 +1915,8 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 * @param key
 	 *            A key string.
 	 * @return The truth.
-	 * @throws JSONException
-	 *             if the value is not a Boolean or the String "true" or "false".
 	 */
-	public boolean getBoolean(String key) {
+	public Boolean getBoolean(String key) {
 		verifyIsNull();
 		Object o = get(key);
 		if (o != null) {
@@ -1930,7 +1926,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 				return true;
 			}
 		}
-		throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a Boolean.");
+		return null;
 	}
 
 	/**
@@ -1939,11 +1935,8 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 * @param key
 	 *            A key string.
 	 * @return The numeric value.
-	 * @throws JSONException
-	 *             if the key is not found or if the value is not a Number object
-	 *             and cannot be converted to a number.
 	 */
-	public double getDouble(String key) {
+	public Double getDouble(String key) {
 		verifyIsNull();
 		Object o = get(key);
 		if (o != null) {
@@ -1953,7 +1946,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 				throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a number.");
 			}
 		}
-		throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a number.");
+		return null;
 	}
 
 	/**
@@ -1963,17 +1956,14 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 * @param key
 	 *            A key string.
 	 * @return The integer value.
-	 * @throws JSONException
-	 *             if the key is not found or if the value cannot be converted to an
-	 *             integer.
 	 */
-	public int getInt(String key) {
+	public Integer getInt(String key) {
 		verifyIsNull();
 		Object o = get(key);
 		if (o != null) {
-			return o instanceof Number ? ((Number) o).intValue() : (int) getDouble(key);
+			return o instanceof Number ? ((Number) o).intValue() : getDouble(key).intValue();
 		}
-		throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a number.");
+		return null;
 	}
 
 	/**
@@ -1982,8 +1972,6 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 * @param key
 	 *            A key string.
 	 * @return A JSONArray which is the value.
-	 * @throws JSONException
-	 *             if the key is not found or if the value is not a JSONArray.
 	 */
 	public JSONArray getJSONArray(String key) {
 		verifyIsNull();
@@ -1991,7 +1979,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 		if (o != null && o instanceof JSONArray) {
 			return (JSONArray) o;
 		}
-		throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a JSONArray.");
+		return null;
 	}
 
 	/**
@@ -2000,8 +1988,6 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 * @param key
 	 *            A key string.
 	 * @return A JSONObject which is the value.
-	 * @throws JSONException
-	 *             if the key is not found or if the value is not a JSONObject.
 	 */
 	public JSONObject getJSONObject(String key) {
 		verifyIsNull();
@@ -2011,7 +1997,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 		} else if (o instanceof JSONObject) {
 			return (JSONObject) o;
 		}
-		throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a JSONObject.");
+		return null;
 	}
 
 	/**
@@ -2025,13 +2011,13 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 *             if the key is not found or if the value cannot be converted to a
 	 *             long.
 	 */
-	public long getLong(String key) {
+	public Long getLong(String key) {
 		verifyIsNull();
 		Object o = get(key);
 		if (o != null) {
-			return o instanceof Number ? ((Number) o).longValue() : (long) getDouble(key);
+			return o instanceof Number ? ((Number) o).longValue() : getDouble(key).longValue();
 		}
-		throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a number.");
+		return null;
 	}
 
 	/**
@@ -2040,8 +2026,6 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 * @param key
 	 *            A key string.
 	 * @return A string which is the value.
-	 * @throws JSONException
-	 *             if the key is not found.
 	 */
 	public String getString(String key) {
 		verifyIsNull();
@@ -2049,7 +2033,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 		if (o != null) {
 			return o.toString();
 		}
-		throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] not found.");
+		return null;
 	}
 
 	/**
@@ -2179,7 +2163,8 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	public boolean optBoolean(String key, boolean defaultValue) {
 		verifyIsNull();
 		try {
-			return getBoolean(key);
+			Boolean obj = getBoolean(key);
+			return obj != null ? obj : defaultValue;
 		} catch (Exception e) {
 			return defaultValue;
 		}
@@ -2248,7 +2233,8 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	public int optInt(String key, int defaultValue) {
 		verifyIsNull();
 		try {
-			return getInt(key);
+			Integer obj = getInt(key);
+			return obj != null ? obj : defaultValue;
 		} catch (Exception e) {
 			return defaultValue;
 		}
@@ -2310,7 +2296,8 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	public long optLong(String key, long defaultValue) {
 		verifyIsNull();
 		try {
-			return getLong(key);
+			Long obj = getLong(key);
+			return obj != null ? obj : defaultValue;
 		} catch (Exception e) {
 			return defaultValue;
 		}
