@@ -116,6 +116,10 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 *             if the object can not be converted to a proper JSONArray.
 	 */
 	public static JSONArray fromObject(Object object, JsonConfig jsonConfig) {
+		if (object == null || JSONUtils.isNull(object)) {
+			return null;
+		}
+
 		if (object instanceof JSONString) {
 			return _fromJSONString((JSONString) object, jsonConfig);
 		} else if (object instanceof JSONArray) {
@@ -153,21 +157,13 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 			}
 		} else if (JSONUtils.isBoolean(object) || JSONUtils.isFunction(object) || JSONUtils.isNumber(object)
 				|| JSONUtils.isNull(object) || JSONUtils.isString(object) || object instanceof JSON) {
-			fireArrayStartEvent(jsonConfig);
-			JSONArray jsonArray = new JSONArray().element(object, jsonConfig);
-			fireElementAddedEvent(0, jsonArray.get(0), jsonConfig);
-			fireArrayStartEvent(jsonConfig);
-			return jsonArray;
+			return null;
 		} else if (object instanceof Enum) {
 			return _fromArray((Enum) object, jsonConfig);
 		} else if (object instanceof Annotation || (object != null && object.getClass().isAnnotation())) {
 			throw new JSONException("Unsupported type");
 		} else if (JSONUtils.isObject(object)) {
-			fireArrayStartEvent(jsonConfig);
-			JSONArray jsonArray = new JSONArray().element(JSONObject.fromObject(object, jsonConfig));
-			fireElementAddedEvent(0, jsonArray.get(0), jsonConfig);
-			fireArrayStartEvent(jsonConfig);
-			return jsonArray;
+			return null;
 		} else {
 			throw new JSONException("Unsupported type");
 		}
@@ -518,7 +514,7 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * </ul>
 	 *
 	 * @deprecated replaced by toCollection
-	 * @see #toCollection(JSONArray,Class,Map)
+	 * @see #toList(JSONArray,Class,Map)
 	 */
 	public static List toList(JSONArray jsonArray, Class objectClass, Map classMap) {
 		JsonConfig jsonConfig = new JsonConfig();
@@ -1136,8 +1132,11 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 		}
 	}
 
-	private static JSONArray _fromString(String string, JsonConfig jsonConfig) {
-		return _fromJSONTokener(new JSONTokener(string), jsonConfig);
+	private static JSONArray _fromString(String str, JsonConfig jsonConfig) {
+		if (str == null || "null".equals(str) || str.trim().length() == 0) {
+			return null;
+		}
+		return _fromJSONTokener(new JSONTokener(str), jsonConfig);
 	}
 
 	private static void processArrayDimensions(JSONArray jsonArray, List dims, int index) {
@@ -1273,7 +1272,7 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	/**
 	 * Remove an element, if present.
 	 *
-	 * @param index
+	 * @param o
 	 *            the element.
 	 * @return this.
 	 */
@@ -1876,11 +1875,8 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * @param index
 	 *            The index must be between 0 and size() - 1.
 	 * @return The truth.
-	 * @throws JSONException
-	 *             If there is no value for the index or if the value is not
-	 *             convertable to boolean.
 	 */
-	public boolean getBoolean(int index) {
+	public Boolean getBoolean(int index) {
 		Object o = get(index);
 		if (o != null) {
 			if (o.equals(Boolean.FALSE) || (o instanceof String && ((String) o).equalsIgnoreCase("false"))) {
@@ -1889,7 +1885,7 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 				return true;
 			}
 		}
-		throw new JSONException("JSONArray[" + index + "] is not a Boolean.");
+		return null;
 	}
 
 	/**
@@ -1898,11 +1894,8 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * @param index
 	 *            The index must be between 0 and size() - 1.
 	 * @return The value.
-	 * @throws JSONException
-	 *             If the key is not found or if the value cannot be converted to a
-	 *             number.
 	 */
-	public double getDouble(int index) {
+	public Double getDouble(int index) {
 		Object o = get(index);
 		if (o != null) {
 			try {
@@ -1911,7 +1904,7 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 				throw new JSONException("JSONArray[" + index + "] is not a number.");
 			}
 		}
-		throw new JSONException("JSONArray[" + index + "] is not a number.");
+		return null;
 	}
 
 	/**
@@ -1920,16 +1913,13 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * @param index
 	 *            The index must be between 0 and size() - 1.
 	 * @return The value.
-	 * @throws JSONException
-	 *             If the key is not found or if the value cannot be converted to a
-	 *             number. if the value cannot be converted to a number.
 	 */
-	public int getInt(int index) {
+	public Integer getInt(int index) {
 		Object o = get(index);
 		if (o != null) {
-			return o instanceof Number ? ((Number) o).intValue() : (int) getDouble(index);
+			return o instanceof Number ? ((Number) o).intValue() : getDouble(index).intValue();
 		}
-		throw new JSONException("JSONArray[" + index + "] is not a number.");
+		return null;
 	}
 
 	/**
@@ -1938,16 +1928,13 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * @param index
 	 *            The index must be between 0 and size() - 1.
 	 * @return A JSONArray value.
-	 * @throws JSONException
-	 *             If there is no value for the index. or if the value is not a
-	 *             JSONArray
 	 */
 	public JSONArray getJSONArray(int index) {
 		Object o = get(index);
 		if (o != null && o instanceof JSONArray) {
 			return (JSONArray) o;
 		}
-		throw new JSONException("JSONArray[" + index + "] is not a JSONArray.");
+		return null;
 	}
 
 	/**
@@ -1956,9 +1943,6 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * @param index
 	 *            subscript
 	 * @return A JSONObject value.
-	 * @throws JSONException
-	 *             If there is no value for the index or if the value is not a
-	 *             JSONObject
 	 */
 	public JSONObject getJSONObject(int index) {
 		Object o = get(index);
@@ -1967,7 +1951,7 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 		} else if (o instanceof JSONObject) {
 			return (JSONObject) o;
 		}
-		throw new JSONException("JSONArray[" + index + "] is not a JSONObject.");
+		return null;
 	}
 
 	/**
@@ -1976,16 +1960,13 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * @param index
 	 *            The index must be between 0 and size() - 1.
 	 * @return The value.
-	 * @throws JSONException
-	 *             If the key is not found or if the value cannot be converted to a
-	 *             number.
 	 */
-	public long getLong(int index) {
+	public Long getLong(int index) {
 		Object o = get(index);
 		if (o != null) {
-			return o instanceof Number ? ((Number) o).longValue() : (long) getDouble(index);
+			return o instanceof Number ? ((Number) o).longValue() : getDouble(index).longValue();
 		}
-		throw new JSONException("JSONArray[" + index + "] is not a number.");
+		return null;
 	}
 
 	/**
@@ -1994,20 +1975,17 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * @param index
 	 *            The index must be between 0 and size() - 1.
 	 * @return A string value.
-	 * @throws JSONException
-	 *             If there is no value for the index.
 	 */
 	public String getString(int index) {
 		Object o = get(index);
 		if (o != null) {
 			return o.toString();
 		}
-		throw new JSONException("JSONArray[" + index + "] not found.");
+		return null;
 	}
 
 	public int hashCode() {
 		int hashcode = 29;
-
 		for (Iterator e = elements.iterator(); e.hasNext();) {
 			Object element = e.next();
 			hashcode += JSONUtils.hashCode(element);
@@ -2087,9 +2065,9 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	}
 
 	public ListIterator listIterator(int index) {
-		if (index < 0 || index > size())
+		if (index < 0 || index > size()) {
 			throw new IndexOutOfBoundsException("Index: " + index);
-
+		}
 		return new JSONArrayListIterator(index);
 	}
 
@@ -2130,7 +2108,8 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 */
 	public boolean optBoolean(int index, boolean defaultValue) {
 		try {
-			return getBoolean(index);
+			Boolean obj = getBoolean(index);
+			return obj != null ? obj : defaultValue;
 		} catch (Exception e) {
 			return defaultValue;
 		}
@@ -2162,7 +2141,8 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 */
 	public double optDouble(int index, double defaultValue) {
 		try {
-			return getDouble(index);
+			Double obj = getDouble(index);
+			return obj != null ? obj : defaultValue;
 		} catch (Exception e) {
 			return defaultValue;
 		}
@@ -2194,7 +2174,8 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 */
 	public int optInt(int index, int defaultValue) {
 		try {
-			return getInt(index);
+			Integer obj = getInt(index);
+			return obj != null ? obj : defaultValue;
 		} catch (Exception e) {
 			return defaultValue;
 		}
@@ -2253,7 +2234,8 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 */
 	public long optLong(int index, long defaultValue) {
 		try {
-			return getLong(index);
+			Long obj = getLong(index);
+			return obj != null ? obj : defaultValue;
 		} catch (Exception e) {
 			return defaultValue;
 		}
