@@ -1,44 +1,27 @@
+# Introduction
 
-[[_introduction]]
-= Introduction
-
-== Welcome to Json-lib
+## Welcome to Json-lib
 
 JSON-lib is a java library for transforming beans, maps, collections, arrays and XML to JSON
 and back again to beans and DynaBeans. It is based on the work by Douglas Crockford in
-http://www.json.org/java[http://www.json.org/java, window="_blank"].
+<http://www.json.org/java>.
 
 The following table summarizes the types conversion between Java and JavaScript:
 
-[cols="40,10,60"]
-|===
-|JSON | |Java
 
-|string|&#8660;
-|java.lang.String, java.lang.Character, char
+| JSON |  | Java |
+| ------ | ------ | ------ |
+| string | &#8660; | java.lang.String, java.lang.Character, char |
+| number | &#8660; | java.lang.Number, java.math.BigDecimal, byte, short, int, long, float, double |
+| true/false | &#8660; | java.lang.Boolean, boolean |
+| null | &#8660; | null |
+| function | &#8660; | net.sf.json.JSONFunction |
+| array | &#8660; | net.sf.json.JSONArray (object, string, number, boolean, function) |
+| object | &#8660; | net.sf.json.JSONObject |
 
-|number | &#8660;
-|java.lang.Number, byte, short, int, long, float, double
-
-|true/false|&#8660;
-|java.lang.Boolean, boolean
-
-|null |&#8660;
-|null
-
-|function |&#8660;
-|org.kordamp.json.JSONFunction
-
-|array|&#8660;
-|org.kordamp.json.JSONArray (object, string, number, boolean, function)
-
-|object |&#8660;
-|org.kordamp.json.JSONObject
-
-|===
 
 The `function` type from JavaScript is not part of the JSON
-format "officially" (please refer to http://www.json.org[http://www.json.org])
+format "officially" (please refer to <http://www.json.org>)
 but it is supported as well.
 
 Json-lib requires (at least) the following dependencies in your classpath:
@@ -54,7 +37,7 @@ Other dependencies are needed if working with XML and Groovy.
 * xom 1.3.2
 * groovy 2.5.8
 
-== What is JSON
+## What is JSON
 
 JSON (JavaScript Object Notation) is a lightweight
 data-interchange format. It is easy for humans to read
@@ -70,4 +53,4 @@ and many others.
 These properties make JSON an ideal data-interchange
 language.
 
-NOTE: Documentation for older releases can be found at link:json-lib.sourceforge.net/[]
+NOTE: Documentation for older releases can be found at link: [json-lib.sourceforge.net](http://json-lib.sourceforge.net)
