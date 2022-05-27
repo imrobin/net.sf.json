@@ -116,7 +116,7 @@ import net.sf.json.util.PropertySetStrategy;
  *
  * @author JSON.org
  */
-public final class JSONObject extends AbstractJSON implements JSON, Map, Comparable {
+public class JSONObject extends AbstractJSON implements JSON, Map, Comparable {
 
 	private static final Log log = LogFactory.getLog(JSONObject.class);
 

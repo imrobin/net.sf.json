@@ -25,7 +25,7 @@ import java.io.Writer;
  *
  * @author JSON.org
  */
-public final class JSONNull implements JSON {
+public class JSONNull implements JSON {
 	/** singleton instance */
 	private static JSONNull instance;
 

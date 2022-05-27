@@ -94,7 +94,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * @author JSON.org
  */
-public final class JSONArray extends AbstractJSON implements JSON, List, Comparable {
+public class JSONArray extends AbstractJSON implements JSON, List, Comparable {
 	/**
 	 * Creates a JSONArray.<br>
 	 * Inspects the object type to call the correct JSONArray factory method.
