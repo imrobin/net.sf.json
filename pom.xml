@@ -5,7 +5,7 @@
 	<groupId>io.github.imrobin</groupId>
 	<artifactId>json-lib</artifactId>
 	<packaging>jar</packaging>
-	<version>2.6</version>
+	<version>2.6.1</version>
 	<name>${project.artifactId}</name>
 	<url>https://github.com/imrobin/net.sf.json</url>
 	<description>a Java json libray.</description>

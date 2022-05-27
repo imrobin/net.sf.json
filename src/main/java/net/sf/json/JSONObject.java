@@ -23,6 +23,8 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -908,7 +910,6 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	}
 
 	private static JSONObject _fromJSONTokener(JSONTokener tokener, JsonConfig jsonConfig) {
-
 		try {
 			char c;
 			String key;
@@ -1410,7 +1411,12 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 *             If the value is an invalid number or if the key is null.
 	 */
 	public JSONObject accumulate(String key, double value) {
-		return _accumulate(key, Double.valueOf(value), new JsonConfig());
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setGroupingUsed(false);
+		nf.setMaximumFractionDigits(20);
+
+		BigDecimal bg = new BigDecimal(nf.format(value));
+		return _accumulate(key, bg, new JsonConfig());
 	}
 
 	/**
@@ -1622,10 +1628,20 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 *             If the key is null or if the number is invalid.
 	 */
 	public JSONObject element(String key, double value) {
+//		verifyIsNull();
+//		Double d = new Double(value);
+//		JSONUtils.testValidity(d);
+//		return element(key, d);
+
 		verifyIsNull();
-		Double d = new Double(value);
-		JSONUtils.testValidity(d);
-		return element(key, d);
+
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setGroupingUsed(false);
+		nf.setMaximumFractionDigits(20);
+
+		BigDecimal bg = new BigDecimal(nf.format(value));
+		JSONUtils.testValidity(bg);
+		return element(key, bg);
 	}
 
 	/**
@@ -1723,7 +1739,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 *            A key string.
 	 * @param value
 	 *            An object which is the value. It should be of one of these types:
-	 *            Boolean, Double, Integer, JSONArray, JSONObject, Long, String, or
+	 *            Boolean, Float, Double, Integer, JSONArray, JSONObject, Long, String, or
 	 *            the JSONNull object.
 	 * @return this.
 	 * @throws JSONException
@@ -1751,7 +1767,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 *            A key string.
 	 * @param value
 	 *            An object which is the value. It should be of one of these types:
-	 *            Boolean, Double, Integer, JSONArray, JSONObject, Long, String, or
+	 *            Boolean, Float, Double, Integer, JSONArray, JSONObject, Long, String, or
 	 *            the JSONNull object.
 	 * @return this.
 	 * @throws JSONException
@@ -1769,7 +1785,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 *            A key string.
 	 * @param value
 	 *            An object which is the value. It should be of one of these types:
-	 *            Boolean, Double, Integer, JSONArray, JSONObject, Long, String, or
+	 *            Boolean, Float, Double, Integer, JSONArray, JSONObject, Long, String, or
 	 *            the JSONNull object.
 	 * @return this.
 	 * @throws JSONException
@@ -1929,6 +1945,59 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 		return null;
 	}
 
+	private BigDecimal toBigDecimal(Object o) {
+		java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
+		nf.setGroupingUsed(false);
+		nf.setMaximumFractionDigits(20);
+		return new BigDecimal(nf.format(o));
+	}
+
+	/**
+	 * Get the BigDecimal value associated with a key.
+	 *
+	 * @param key
+	 *            A key string.
+	 * @return The numeric value.
+	 */
+	public BigDecimal getBigDecimal(String key) {
+		verifyIsNull();
+		Object o = get(key);
+		if (o != null) {
+			try {
+				if (o instanceof BigDecimal) {
+					return (BigDecimal) o;
+				} else if (o instanceof String) {
+					return new BigDecimal((String) o);
+				} else {
+					return toBigDecimal(o);
+				}
+			} catch (Exception e) {
+				throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a number.");
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Get the float value associated with a key.
+	 *
+	 * @param key
+	 *            A key string.
+	 * @return The numeric value.
+	 */
+	public Float getFloat(String key) {
+		verifyIsNull();
+		Object o = get(key);
+		if (o != null) {
+			try {
+				return o instanceof Number ? ((Number) o).floatValue() : Float.parseFloat((String) o);
+			} catch (Exception e) {
+				throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a number.");
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Get the double value associated with a key.
 	 *
@@ -1961,7 +2030,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 		verifyIsNull();
 		Object o = get(key);
 		if (o != null) {
-			return o instanceof Number ? ((Number) o).intValue() : getDouble(key).intValue();
+			return o instanceof Number ? ((Number) o).intValue() : getFloat(key).intValue();
 		}
 		return null;
 	}
@@ -2015,7 +2084,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 		verifyIsNull();
 		Object o = get(key);
 		if (o != null) {
-			return o instanceof Number ? ((Number) o).longValue() : getDouble(key).longValue();
+			return o instanceof Number ? ((Number) o).longValue() : getFloat(key).longValue();
 		}
 		return null;
 	}
@@ -2165,6 +2234,76 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 		try {
 			Boolean obj = getBoolean(key);
 			return obj != null ? obj : defaultValue;
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+
+	/**
+	 * Get an optional float associated with a key, or NaN if there is no such key
+	 * or if its value is not a number. If the value is a string, an attempt will be
+	 * made to evaluate it as a number.
+	 *
+	 * @param key
+	 *            A string which is the key.
+	 * @return An object which is the value.
+	 */
+	public float optFloat(String key) {
+		verifyIsNull();
+		return optFloat(key, Float.NaN);
+	}
+
+	/**
+	 * Get an optional float associated with a key, or the defaultValue if there is
+	 * no such key or if its value is not a number. If the value is a string, an
+	 * attempt will be made to evaluate it as a number.
+	 *
+	 * @param key
+	 *            A key string.
+	 * @param defaultValue
+	 *            The default.
+	 * @return An object which is the value.
+	 */
+	public float optFloat(String key, float defaultValue) {
+		verifyIsNull();
+		try {
+			Object o = opt(key);
+			return o instanceof Number ? ((Number) o).floatValue() : new Float((String) o).floatValue();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+
+	/**
+	 * Get an optional BigDecimal associated with a key, or NaN if there is no such key
+	 * or if its value is not a number. If the value is a string, an attempt will be
+	 * made to evaluate it as a number.
+	 *
+	 * @param key
+	 *            A string which is the key.
+	 * @return An object which is the value.
+	 */
+	public BigDecimal optBigDecimal(String key) {
+		verifyIsNull();
+		return optBigDecimal(key, null);
+	}
+
+	/**
+	 * Get an optional BigDecimal associated with a key, or the defaultValue if there is
+	 * no such key or if its value is not a number. If the value is a string, an
+	 * attempt will be made to evaluate it as a number.
+	 *
+	 * @param key
+	 *            A key string.
+	 * @param defaultValue
+	 *            The default.
+	 * @return An object which is the value.
+	 */
+	public BigDecimal optBigDecimal(String key, BigDecimal defaultValue) {
+		verifyIsNull();
+		try {
+			Object o = opt(key);
+			return o instanceof BigDecimal ? ((BigDecimal) o) : toBigDecimal(o);
 		} catch (Exception e) {
 			return defaultValue;
 		}
@@ -2621,7 +2760,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 *            A key string.
 	 * @param value
 	 *            An object which is the value. It should be of one of these types:
-	 *            Boolean, Double, Integer, JSONArray, JSONObject, Long, String, or
+	 *            Boolean, Float, Double, Integer, JSONArray, JSONObject, Long, String, or
 	 *            the JSONNull object.
 	 * @return this.
 	 * @throws JSONException
@@ -2686,7 +2825,7 @@ public final class JSONObject extends AbstractJSON implements JSON, Map, Compara
 	 *            A key string.
 	 * @param value
 	 *            An object which is the value. It should be of one of these types:
-	 *            Boolean, Double, Integer, JSONArray, JSONObject, Long, String, or
+	 *            Boolean, Float, Double, Integer, JSONArray, JSONObject, Long, String, or
 	 *            the JSONNull object.
 	 * @return this.
 	 * @throws JSONException

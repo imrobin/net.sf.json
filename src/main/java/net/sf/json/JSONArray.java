@@ -23,6 +23,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -1331,9 +1333,17 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 * @return this.
 	 */
 	public JSONArray element(double value) {
-		Double d = new Double(value);
-		JSONUtils.testValidity(d);
-		return element(d);
+//		Double d = new Double(value);
+//		JSONUtils.testValidity(d);
+//		return element(d);
+
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setGroupingUsed(false);
+		nf.setMaximumFractionDigits(20);
+
+		BigDecimal bg = new BigDecimal(nf.format(value));
+		JSONUtils.testValidity(bg);
+		return element(bg);
 	}
 
 	/**
@@ -1424,7 +1434,12 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	 *             If the index is negative or if the value is not finite.
 	 */
 	public JSONArray element(int index, double value) {
-		return element(index, new Double(value));
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setGroupingUsed(false);
+		nf.setMaximumFractionDigits(20);
+
+		BigDecimal bg = new BigDecimal(nf.format(value));
+		return element(index, bg);
 	}
 
 	/**
@@ -1888,6 +1903,38 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 		return null;
 	}
 
+	private BigDecimal toBigDecimal(Object o) {
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setGroupingUsed(false);
+		nf.setMaximumFractionDigits(20);
+		return new BigDecimal(nf.format(o));
+	}
+
+	/**
+	 * Get the BigDecimal value associated with a key.
+	 *
+	 * @param index
+	 *            The index must be between 0 and size() - 1.
+	 * @return The BigDecimal value.
+	 */
+	public BigDecimal getBigDecimal(int index) {
+		Object o = get(index);
+		if (o != null) {
+			try {
+				if (o instanceof BigDecimal) {
+					return (BigDecimal) o;
+				} else if (o instanceof String) {
+					return new BigDecimal((String) o);
+				} else {
+					return toBigDecimal(o);
+				}
+			} catch (Exception e) {
+				throw new JSONException("JSONArray[" + index + "] is not a number.");
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Get the double value associated with an index.
 	 *
@@ -2109,6 +2156,39 @@ public final class JSONArray extends AbstractJSON implements JSON, List, Compara
 	public boolean optBoolean(int index, boolean defaultValue) {
 		try {
 			Boolean obj = getBoolean(index);
+			return obj != null ? obj : defaultValue;
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+
+	/**
+	 * Get the optional BigDecimal value associated with an index. NaN is returned if
+	 * there is no value for the index, or if the value is not a number and cannot
+	 * be converted to a number.
+	 *
+	 * @param index
+	 *            The index must be between 0 and size() - 1.
+	 * @return The value.
+	 */
+	public BigDecimal optBigDecimal(int index) {
+		return optBigDecimal(index, null);
+	}
+
+	/**
+	 * Get the optional BigDecimal value associated with an index. The defaultValue is
+	 * returned if there is no value for the index, or if the value is not a number
+	 * and cannot be converted to a number.
+	 *
+	 * @param index
+	 *            subscript
+	 * @param defaultValue
+	 *            The default value.
+	 * @return The value.
+	 */
+	public BigDecimal optBigDecimal(int index, BigDecimal defaultValue) {
+		try {
+			BigDecimal obj = getBigDecimal(index);
 			return obj != null ? obj : defaultValue;
 		} catch (Exception e) {
 			return defaultValue;
