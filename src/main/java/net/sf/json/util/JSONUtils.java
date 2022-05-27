@@ -18,6 +18,7 @@ package net.sf.json.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -94,6 +95,21 @@ public final class JSONUtils {
 	}
 
 	/**
+	 * Produce a string from a BigDecimal. The string "null" will be returned if the
+	 * number is not finite.
+	 *
+	 * @param bg
+	 *            A BigDecimal.
+	 * @return A String.
+	 */
+	public static String bigDecimalToString(BigDecimal bg) {
+		if (bg == null) {
+			return null;
+		}
+		return bg.toPlainString();
+	}
+
+	/**
 	 * Produce a string from a double. The string "null" will be returned if the
 	 * number is not finite.
 	 *
@@ -108,16 +124,21 @@ public final class JSONUtils {
 
 		// Shave off trailing zeros and decimal point, if possible.
 
-		String s = Double.toString(d);
-		if (s.indexOf('.') > 0 && s.indexOf('e') < 0 && s.indexOf('E') < 0) {
-			while (s.endsWith("0")) {
-				s = s.substring(0, s.length() - 1);
-			}
-			if (s.endsWith(".")) {
-				s = s.substring(0, s.length() - 1);
-			}
-		}
-		return s;
+//		String s = Double.toString(d);
+//		if (s.indexOf('.') > 0 && s.indexOf('e') < 0 && s.indexOf('E') < 0) {
+//			while (s.endsWith("0")) {
+//				s = s.substring(0, s.length() - 1);
+//			}
+//			if (s.endsWith(".")) {
+//				s = s.substring(0, s.length() - 1);
+//			}
+//		}
+//		return s;
+
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setGroupingUsed(false);
+		nf.setMaximumFractionDigits(20);
+		return nf.format(d);
 	}
 
 	/**
@@ -258,6 +279,13 @@ public final class JSONUtils {
 	}
 
 	/**
+	 * Tests if Class represents a primitive float or wrapper.<br>
+	 */
+	public static boolean isFloat(Class clazz) {
+		return clazz != null && (Float.TYPE.isAssignableFrom(clazz) || Float.class.isAssignableFrom(clazz));
+	}
+
+	/**
 	 * Tests if Class represents a primitive double or wrapper.<br>
 	 */
 	public static boolean isDouble(Class clazz) {
@@ -324,8 +352,8 @@ public final class JSONUtils {
 	public static boolean isNumber(Class clazz) {
 		return clazz != null && (Byte.TYPE.isAssignableFrom(clazz) || Short.TYPE.isAssignableFrom(clazz)
 				|| Integer.TYPE.isAssignableFrom(clazz) || Long.TYPE.isAssignableFrom(clazz)
-				|| Float.TYPE.isAssignableFrom(clazz) || Double.TYPE.isAssignableFrom(clazz)
-				|| Number.class.isAssignableFrom(clazz));
+				|| BigDecimal.class.isAssignableFrom(clazz) || Float.TYPE.isAssignableFrom(clazz)
+				|| Double.TYPE.isAssignableFrom(clazz) || Number.class.isAssignableFrom(clazz));
 	}
 
 	/**
@@ -334,7 +362,8 @@ public final class JSONUtils {
 	public static boolean isNumber(Object obj) {
 		if ((obj != null && obj.getClass() == Byte.TYPE) || (obj != null && obj.getClass() == Short.TYPE)
 				|| (obj != null && obj.getClass() == Integer.TYPE) || (obj != null && obj.getClass() == Long.TYPE)
-				|| (obj != null && obj.getClass() == Float.TYPE) || (obj != null && obj.getClass() == Double.TYPE)) {
+				|| (obj != null && obj.getClass() == BigDecimal.class) || (obj != null && obj.getClass() == Float.TYPE)
+				|| (obj != null && obj.getClass() == Double.TYPE)) {
 			return true;
 		}
 
@@ -435,16 +464,20 @@ public final class JSONUtils {
 
 		// Shave off trailing zeros and decimal point, if possible.
 
-		String s = n.toString();
-		if (s.indexOf('.') > 0 && s.indexOf('e') < 0 && s.indexOf('E') < 0) {
-			while (s.endsWith("0")) {
-				s = s.substring(0, s.length() - 1);
-			}
-			if (s.endsWith(".")) {
-				s = s.substring(0, s.length() - 1);
-			}
-		}
-		return s;
+//		String s = n.toString();
+//		if (s.indexOf('.') > 0 && s.indexOf('e') < 0 && s.indexOf('E') < 0) {
+//			while (s.endsWith("0")) {
+//				s = s.substring(0, s.length() - 1);
+//			}
+//			if (s.endsWith(".")) {
+//				s = s.substring(0, s.length() - 1);
+//			}
+//		}
+//		return s;
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setGroupingUsed(false);
+		nf.setMaximumFractionDigits(20);
+		return nf.format(n);
 	}
 
 	/**
@@ -606,8 +639,31 @@ public final class JSONUtils {
 	 * Long gets downgraded to Integer if possible.<br>
 	 */
 	public static Number transformNumber(Number input) {
-		if (input instanceof Float) {
-			return new Double(input.toString());
+//		if (input instanceof BigDecimal) {
+//			return (BigDecimal) input;
+//		} else if (input instanceof Float) {
+//			return new Float(input.toString());
+//		} else if (input instanceof Double) {
+//			return new Double(input.toString());
+//		} else if (input instanceof Short) {
+//			return new Integer(input.intValue());
+//		} else if (input instanceof Byte) {
+//			return new Integer(input.intValue());
+//		} else if (input instanceof Long) {
+//			Long max = new Long(Integer.MAX_VALUE);
+//			if (input.longValue() <= max.longValue() && input.longValue() >= Integer.MIN_VALUE) {
+//				return new Integer(input.intValue());
+//			}
+//		}
+//		return input;
+
+		if (input instanceof BigDecimal) {
+			return (BigDecimal) input;
+		} else if (input instanceof Float || input instanceof Double) {
+			NumberFormat nf = NumberFormat.getInstance();
+			nf.setGroupingUsed(false);
+			nf.setMaximumFractionDigits(20);
+			return new BigDecimal(nf.format(input));
 		} else if (input instanceof Short) {
 			return new Integer(input.intValue());
 		} else if (input instanceof Byte) {
@@ -618,7 +674,6 @@ public final class JSONUtils {
 				return new Integer(input.intValue());
 			}
 		}
-
 		return input;
 	}
 

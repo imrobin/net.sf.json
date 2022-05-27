@@ -420,7 +420,8 @@ public class JSONTokener {
 			}
 
 			try {
-				return NumberUtils.createNumber(s);
+				//return NumberUtils.createNumber(s);
+				return NumberUtils.createBigDecimal(s);
 			} catch (Exception e) {
 				return s;
 			}

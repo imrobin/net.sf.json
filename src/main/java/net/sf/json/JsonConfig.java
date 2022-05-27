@@ -284,7 +284,7 @@ public class JsonConfig {
 	 * Returns null if none is registered.<br>
 	 * [JSON -&gt; Java]
 	 * 
-	 * @param propertyType
+	 * @param beanClass
 	 *            a class used for searching a PropertyNameProcessor.
 	 */
 	public PropertyNameProcessor findJavaPropertyNameProcessor(Class beanClass) {
@@ -317,7 +317,7 @@ public class JsonConfig {
 	 * Returns null if none is registered.<br>
 	 * [Java -&gt; JSON]
 	 * 
-	 * @param propertyType
+	 * @param beanClass
 	 *            a class used for searching a PropertyNameProcessor.
 	 */
 	public PropertyNameProcessor findJsonPropertyNameProcessor(Class beanClass) {
@@ -427,7 +427,7 @@ public class JsonConfig {
 	 * Returns null if none is registered. <br>
 	 * [JSON -&gt; Java]
 	 * 
-	 * @param propertyType
+	 * @param beanClass
 	 *            a class used for searching a PropertyNameProcessor.
 	 * 
 	 * @deprecated use findJavaPropertyNameProcessor() instead
