@@ -279,6 +279,13 @@ public final class JSONUtils {
 	}
 
 	/**
+	 * Tests if Class represents a primitive BigDecimal or wrapper.<br>
+	 */
+	public static boolean isBigDecimal(Class clazz) {
+		return clazz != null && BigDecimal.class.isAssignableFrom(clazz);
+	}
+
+	/**
 	 * Tests if Class represents a primitive float or wrapper.<br>
 	 */
 	public static boolean isFloat(Class clazz) {

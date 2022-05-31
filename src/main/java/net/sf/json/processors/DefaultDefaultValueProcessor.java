@@ -20,6 +20,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.util.JSONUtils;
 
+import java.math.BigDecimal;
+
 /**
  * Base implementation for DefaultDefaultValueProcessor.
  *
@@ -30,8 +32,12 @@ public class DefaultDefaultValueProcessor implements DefaultValueProcessor {
 		if (JSONUtils.isArray(type)) {
 			return new JSONArray();
 		} else if (JSONUtils.isNumber(type)) {
-			if (JSONUtils.isDouble(type)) {
+			if (JSONUtils.isBigDecimal(type)) {
+				return BigDecimal.ZERO;
+			} else if (JSONUtils.isDouble(type)) {
 				return new Double(0);
+			} else if (JSONUtils.isFloat(type)) {
+				return new Float(0);
 			} else {
 				return new Integer(0);
 			}
