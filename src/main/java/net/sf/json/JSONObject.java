@@ -2030,7 +2030,26 @@ public class JSONObject extends AbstractJSON implements JSON, Map, Comparable {
 		verifyIsNull();
 		Object o = get(key);
 		if (o != null) {
-			return o instanceof Number ? ((Number) o).intValue() : getFloat(key).intValue();
+			// if o is a Number, we can just return the int value of it
+			if (o instanceof Number) {
+				return ((Number) o).intValue();
+			} else {
+				// otherwise, as next do:
+				// first, get value with String type by o
+				String value = o.toString();
+				// second, we need to try to convert it to a int
+				try {
+					return Integer.valueOf(value);
+				} catch (NumberFormatException e) {
+					// if we can't convert it to a int, we need to try to convert it to a double
+					// and then to a int
+					try {
+						return Double.valueOf(value).intValue();
+					} catch (NumberFormatException e2) {
+						throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a number.");
+					}
+				}
+			}
 		}
 		return null;
 	}
@@ -2084,7 +2103,26 @@ public class JSONObject extends AbstractJSON implements JSON, Map, Comparable {
 		verifyIsNull();
 		Object o = get(key);
 		if (o != null) {
-			return o instanceof Number ? ((Number) o).longValue() : getFloat(key).longValue();
+			// if o is a Number, we can just return the long value of it
+			if (o instanceof Number) {
+				return ((Number) o).longValue();
+			} else {
+				// otherwise, as next do:
+				// first, get value with String type by o
+				String value = o.toString();
+				// second, we need to try to convert it to a long
+				try {
+					return Long.valueOf(value);
+				} catch (NumberFormatException e) {
+					// if we can't convert it to a long, we need to try to convert it to a double
+					// and then to a long
+					try {
+						return Double.valueOf(value).longValue();
+					} catch (NumberFormatException e2) {
+						throw new JSONException("JSONObject[" + JSONUtils.quote(key) + "] is not a number.");
+					}
+				}
+			}
 		}
 		return null;
 	}
